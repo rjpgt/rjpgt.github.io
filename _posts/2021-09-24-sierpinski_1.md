@@ -28,7 +28,6 @@ function pointInBetween(p1, p2, pct) {
 }
 
 function createPointData(triangle_corners) {
-  const points = [];
   const u = pointInBetween(
     triangle_corners[0],
     triangle_corners[1],
@@ -43,9 +42,9 @@ function createPointData(triangle_corners) {
   for (let i = 0; i < _point_count; i++) {
     const rand_index = Math.floor(Math.random() * 3);
     p = pointInBetween(p, triangle_corners[rand_index], 0.5);
-    points.push(p.x, p.y);
+    _coords[2 * i] = p.x;
+    _coords[2 * i + 1] = p.y;
   }
-  _coords = new Float32Array(points);
 }
 ```
 
@@ -58,7 +57,6 @@ function draw() {
   _gl.clear(_gl.COLOR_BUFFER_BIT);
   _gl.bindBuffer(_gl.ARRAY_BUFFER, _coords_buf);
   _gl.bufferData(_gl.ARRAY_BUFFER, _coords, _gl.STREAM_DRAW);
-  _gl.vertexAttribPointer(_a_coords, 2, _gl.FLOAT, false, 0, 0);
   _gl.drawArrays(_gl.POINTS, 0, _point_count);
 }
 ```
@@ -162,7 +160,6 @@ function pointInBetween(p1, p2, pct) {
 }
 
 function createPointData(triangle_corners) {
-  const points = [];
   const u = pointInBetween(
     triangle_corners[0],
     triangle_corners[1],
@@ -177,9 +174,9 @@ function createPointData(triangle_corners) {
   for (let i = 0; i < _point_count; i++) {
     const rand_index = Math.floor(Math.random() * 3);
     p = pointInBetween(p, triangle_corners[rand_index], 0.5);
-    points.push(p.x, p.y);
+    _coords[2 * i] = p.x;
+    _coords[2 * i + 1] = p.y;
   }
-  _coords = new Float32Array(points);
 }
 
 function initGL() {
@@ -196,6 +193,8 @@ function initGL() {
   const u_color = _gl.getUniformLocation(prog, 'u_color');
   _gl.uniform3fv(u_color, [1.0, 1.0, 0.0]);
   _gl.enableVertexAttribArray(_a_coords);
+  _gl.bindBuffer(_gl.ARRAY_BUFFER, _coords_buf);
+  _gl.vertexAttribPointer(_a_coords, 2, _gl.FLOAT, false, 0, 0);
   _gl.clearColor(0, 0, 0, 1);
   _gl.viewport(0, 0, _canvas.width, _canvas.height);
 }
@@ -204,7 +203,6 @@ function draw() {
   _gl.clear(_gl.COLOR_BUFFER_BIT);
   _gl.bindBuffer(_gl.ARRAY_BUFFER, _coords_buf);
   _gl.bufferData(_gl.ARRAY_BUFFER, _coords, _gl.STREAM_DRAW);
-  _gl.vertexAttribPointer(_a_coords, 2, _gl.FLOAT, false, 0, 0);
   _gl.drawArrays(_gl.POINTS, 0, _point_count);
 }
 
@@ -221,6 +219,7 @@ function resize() {
   _canvas.width = _canvas_div.clientWidth;
   _canvas.height = _canvas_div.clientHeight;
   _point_count = _canvas.width === 600 ? 100000 : 50000;
+  _coords = new Float32Array(2 * _point_count);
   try {
     _gl = _canvas.getContext('webgl2', { alpha: false, depth: false });
     if (!_gl) {

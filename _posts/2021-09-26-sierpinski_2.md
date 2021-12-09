@@ -58,10 +58,8 @@ function draw() {
   _gl.clear(_gl.COLOR_BUFFER_BIT);
   _gl.bindBuffer(_gl.ARRAY_BUFFER, _coords_buf);
   _gl.bufferData(_gl.ARRAY_BUFFER, _coords, _gl.STREAM_DRAW);
-  _gl.vertexAttribPointer(_a_coords, 2, _gl.FLOAT, false, 0, 0);
   _gl.bindBuffer(_gl.ARRAY_BUFFER, _color_buf);
   _gl.bufferData(_gl.ARRAY_BUFFER, _colors, _gl.STREAM_DRAW);
-  _gl.vertexAttribPointer(_a_color, 3, _gl.FLOAT, false, 0, 0);
   _gl.drawArrays(_gl.TRIANGLES, 0, _coords.length / 2);
 }
 ```
@@ -179,6 +177,10 @@ function initGL() {
   _gl.uniform1f(u_height, _canvas.height);
   _gl.enableVertexAttribArray(_a_color);
   _gl.enableVertexAttribArray(_a_coords);
+  _gl.bindBuffer(_gl.ARRAY_BUFFER, _coords_buf);
+  _gl.vertexAttribPointer(_a_coords, 2, _gl.FLOAT, false, 0, 0);
+  _gl.bindBuffer(_gl.ARRAY_BUFFER, _color_buf);
+  _gl.vertexAttribPointer(_a_color, 3, _gl.FLOAT, false, 0, 0);
   _gl.clearColor(0, 0, 0, 1);
   _gl.enable(_gl.BLEND);
   _gl.blendFunc(_gl.SRC_ALPHA, _gl.ONE_MINUS_SRC_ALPHA);
@@ -189,10 +191,8 @@ function draw() {
   _gl.clear(_gl.COLOR_BUFFER_BIT);
   _gl.bindBuffer(_gl.ARRAY_BUFFER, _coords_buf);
   _gl.bufferData(_gl.ARRAY_BUFFER, _coords, _gl.STREAM_DRAW);
-  _gl.vertexAttribPointer(_a_coords, 2, _gl.FLOAT, false, 0, 0);
   _gl.bindBuffer(_gl.ARRAY_BUFFER, _color_buf);
   _gl.bufferData(_gl.ARRAY_BUFFER, _colors, _gl.STREAM_DRAW);
-  _gl.vertexAttribPointer(_a_color, 3, _gl.FLOAT, false, 0, 0);
   _gl.drawArrays(_gl.TRIANGLES, 0, _coords.length / 2);
 }
 
