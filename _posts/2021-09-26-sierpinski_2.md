@@ -64,9 +64,9 @@ function draw() {
 }
 ```
 
-Since the points are stored in `_coords` as a sequence of their $$x$$ and $$y$$ coordinates, the number of points is `_coords.length/2`.
+Since the points are stored in `_coords` as a sequence of their $x$ and $y$ coordinates, the number of points is `_coords.length/2`.
 
-But since we are drawing triangles we can give a colour to each vertex of the triangle and Webgl will draw a triangle with a colour gradient obtained by interpolating between the colours at its vertices. So, in addition to a vertex buffer object that stores the coordinates of the triangle vertices, `_coords_buf`, we have another vertex buffer object that stores the colours, `_color_buf`. Each vertex has two position components, $$x$$ and $$y$$, and three colour components, red, blue, and green. The vertex shader, therefore, has an additional attribute for colour, `a_color`.
+But since we are drawing triangles we can give a colour to each vertex of the triangle and Webgl will draw a triangle with a colour gradient obtained by interpolating between the colours at its vertices. So, in addition to a vertex buffer object that stores the coordinates of the triangle vertices, `_coords_buf`, we have another vertex buffer object that stores the colours, `_color_buf`. Each vertex has two position components, $x$ and $y$, and three colour components, red, blue, and green. The vertex shader, therefore, has an additional attribute for colour, `a_color`.
 
 The rest of the code is mostly as it was in the previous post. Here is the entire code:
 
