@@ -1,31 +1,14 @@
----
-layout: post
-title: 'Triangles, triangle fan, and triangle strip'
-date: 2024-04-20 02:15:00 +0530
-script: triangles
-extracss: true
-hascanvas: true
-hasmath: true
----
-
-Back to basics.
-
-Click( or touch ) the square above to cycle through triangles, a triangle fan, and a triangle strip.
-
-There are seven vertices. All in the default clip coordinate system with $x$ and $y$ going from -1 to 1. $z$ is zero for all the vertices. The same vertices are used to draw two standalone triangles, a triangle fan with four triangles, and a triangle strip with four triangles. The order of the vertices in each case is different. In the function `initProg` shown below, the first six values in the `indices` array are the indices of the vertices in the `pos_buf` array buffer that draw the standalone triangles, the next six those that draw the triangle fan, and the last six those that draw the triangle strip. This program is an example of using `drawElements`.  The qualifier `flat` in the vertex and fragment shaders produces a flat coloring of the triangles instead of a coloring obtained by interpolating the colors at the vertices. This makes it easier to make out the individual triangles in the fan and the strip.
-
-The code:
-
-```javascript
 const vert_shader_src = `#version 300 es
 precision highp float;
 
-in vec2 position;
+in vec3 position;
 in vec3 vertex_color;
-flat out vec3 color;
+out vec3 color;
+uniform float u_rot;
 
 void main(void) {
-	gl_Position = vec4(position, 0.0, 1.0);
+  mat3 rot_mat = mat3(cos(u_rot), sin(u_rot), 0.0, -sin(u_rot), cos(u_rot), 0.0, 0.0, 0.0, 1.0);
+	gl_Position = vec4(rot_mat*position, 1.0);
 	color = vertex_color;
 }`;
 
@@ -36,7 +19,7 @@ const frag_shader_src = `#version 300 es
 	precision mediump float;
 #endif
 
-flat in vec3 color;
+in vec3 color;
 out vec4 frag_color;
 
 void main(void) {
@@ -74,8 +57,6 @@ function createProgram() {
 function initGl() {
   const gl = g.gl;
 
-  g.primitives = [gl.TRIANGLES, gl.TRIANGLE_FAN, gl.TRIANGLE_STRIP];
-  g.primitive_index = 0;
   gl.clearColor(0.2, 0.3, 0.3, 1);
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -87,44 +68,95 @@ function initProg() {
   const gl = g.gl;
   gl.useProgram(prog);
 
+  g.u_rot = gl.getUniformLocation(prog, 'u_rot');
+
+  /*
+  Five point star, five vertices at the larger radius
+  and five vertices at the smaller radius. Three coordinates(x, y, z) for
+  each of them plus three coordinates for the center gives 33
+  */
+  const vert_posns = new Array(33);
+  const vert_colors = new Array(33);
+  const r1 = 0.9; //larger radius
+  const r2 = 0.4; //smaller radius
+  const angle = (36 * Math.PI) / 180;
+  vert_posns[0] = 0;
+  vert_posns[1] = 0;
+  vert_posns[2] = 0;
+  vert_colors[0] = 0.78;
+  vert_colors[1] = 0.08;
+  vert_colors[2] = 0.52;
+  for (let i = 0; i < 5; i++) {
+    vert_posns[i * 6 + 3] = r1 * Math.cos(2 * i * angle);
+    vert_posns[i * 6 + 4] = r1 * Math.sin(2 * i * angle);
+    vert_posns[i * 6 + 5] = 0;
+    vert_posns[i * 6 + 6] = r2 * Math.cos((2 * i + 1) * angle);
+    vert_posns[i * 6 + 7] = r2 * Math.sin((2 * i + 1) * angle);
+    vert_posns[i * 6 + 8] = 0;
+
+    vert_colors[i * 6 + 3] = 0.1;
+    vert_colors[i * 6 + 4] = 0.1;
+    vert_colors[i * 6 + 5] = 0.44;
+    vert_colors[i * 6 + 6] = 0.6;
+    vert_colors[i * 6 + 7] = 0.98;
+    vert_colors[i * 6 + 8] = 0.6;
+  }
+
   const position = gl.getAttribLocation(prog, 'position');
   const pos_buf = gl.createBuffer();
   gl.enableVertexAttribArray(position);
   gl.bindBuffer(gl.ARRAY_BUFFER, pos_buf);
-  gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-  const positions = new Float32Array([
-    -0.75, -0.667, 0.25, -0.333, -0.25, 0.0, 0.75, 0.2, 1.0, 1.0, 0.05, 0.667,
-    -0.6, 0.6,
-  ]);
-  gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+  gl.vertexAttribPointer(position, 3, gl.FLOAT, false, 0, 0);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vert_posns), gl.STATIC_DRAW);
 
   const vertex_color = gl.getAttribLocation(prog, 'vertex_color');
   const col_buf = gl.createBuffer();
   gl.enableVertexAttribArray(vertex_color);
   gl.bindBuffer(gl.ARRAY_BUFFER, col_buf);
   gl.vertexAttribPointer(vertex_color, 3, gl.FLOAT, false, 0, 0);
-  const colors = new Float32Array([
-    1, 0.85, 0.73, 1, 0.27, 0, 0.93, 0.53, 0.93, 0.74, 0.56, 0.56, 0.6, 0.8,
-    0.2, 0.48, 0.41, 0.93, 0.86, 0.08, 0.24,
-  ]);
-  gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vert_colors), gl.STATIC_DRAW);
 
   const index_buf = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buf);
-  const indices = new Uint8Array([
-    0, 1, 2, 3, 4, 5, 2, 0, 1, 3, 5, 6, 0, 1, 2, 3, 5, 4,
-  ]);
+  const indices = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1]);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
 }
 
 function draw() {
   const gl = g.gl;
   gl.clear(gl.COLOR_BUFFER_BIT);
-  const primitive = g.primitives[g.primitive_index];
-  gl.drawElements(primitive, 6, gl.UNSIGNED_BYTE, 6 * g.primitive_index);
+  gl.uniform1f(g.u_rot, g.rotn);
+  gl.drawElements(gl.TRIANGLE_FAN, 12, gl.UNSIGNED_BYTE, 0);
+}
+
+function animate(delay) {
+  const rotn_speed = 0.8; //radians per second
+  const TWOPI = 2 * Math.PI;
+  let then;
+  function tick(now) {
+    if (!then) {
+      then = now;
+    }
+    const elapsed = now - then;
+    if (elapsed > delay) {
+      then = now;
+      //elapsed is in milliseconds
+      rotn_change = (rotn_speed * elapsed) / 1000;
+      g.rotn += rotn_change;
+      if (g.rotn > TWOPI) {
+        g.rotn -= TWOPI;
+      }
+      draw();
+    }
+    g.animation_request = requestAnimationFrame(tick);
+  }
+  g.animation_request = requestAnimationFrame(tick);
 }
 
 function onResize() {
+  if (g.animation_request) {
+    cancelAnimationFrame(g.animation_request);
+  }
   g.canvas.width = g.canvas_div.clientWidth;
   g.canvas.height = g.canvas_div.clientHeight;
   try {
@@ -143,23 +175,33 @@ function onResize() {
     g.canvas_div.innerHTML = `<p>${e.message}</p>`;
     return;
   }
-  draw();
+  if (g.animation) {
+    animate(16);
+  } else {
+    draw();
+  }
 }
 
 function onClick() {
-  g.primitive_index = (g.primitive_index + 1) % g.primitives.length;
-  draw();
+  g.animation = !g.animation;
+  if (g.animation) {
+    animate(16);
+  } else {
+    if (g.animation_request) {
+      cancelAnimationFrame(g.animation_request);
+    }
+  }
 }
 
 function init() {
   g.canvas_div = document.querySelector('#canvas_div');
   g.canvas = document.querySelector('canvas');
   g.canvas.addEventListener('click', onClick);
+  g.rotn = 0;
+  g.animation = true;
   onResize();
 }
 
 window.addEventListener('load', init);
 window.addEventListener('resize', onResize, false);
 window.addEventListener('orientationchange', onResize, false);
-
-```
