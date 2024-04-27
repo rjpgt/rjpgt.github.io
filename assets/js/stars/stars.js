@@ -11,8 +11,8 @@ uniform float u_rot;
 void main(void) {
   mat2 rot_mat = mat2(cos(u_rot), sin(u_rot), -sin(u_rot), cos(u_rot));
   //mat2 scale_mat = mat2(0.2, 0.0, 0.0, 0.2);
-	//gl_Position = vec4(rot_mat*scale_mat*position + translation, 0.0, 1.0);
-	gl_Position = vec4(rot_mat*position + translation, 0.0, 1.0);
+  //gl_Position = vec4(rot_mat*scale_mat*position + translation, 0.0, 1.0);
+  gl_Position = vec4(rot_mat*position + translation, 0.0, 1.0);
   if (gl_VertexID == 0) {
     color = vec3(0.0, 0.0, 0.0);
   } else {
@@ -23,16 +23,16 @@ void main(void) {
 const frag_shader_src = `#version 300 es
 #pragma vscode_glsllint_stage: frag
 #ifdef GL_FRAGMENT_PRECISION_HIGH
-	precision highp float;
+  precision highp float;
 #else
-	precision mediump float;
+  precision mediump float;
 #endif
 
 in vec3 color;
 out vec4 frag_color;
 
 void main(void) {
-	frag_color = vec4(color, 1.0);
+  frag_color = vec4(color, 1.0);
 }`;
 
 const g = {}; //globals
